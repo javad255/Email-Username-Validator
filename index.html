@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>اعتبارسنجی ایمیل و نام‌کاربری</title>
+<link rel="shortcut icon" href="./image.png" type="image/x-icon">
+<style>
+body { font-family: sans-serif; background:#f5f5f5; padding:30px; }
+.container { max-width:600px; margin:auto; background:#fff; padding:25px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.1); }
+label { font-weight:bold; }
+input { width:100%; padding:10px; margin:10px 0 20px; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+button { padding:12px 20px; border:none; background:#007bff; color:#fff; border-radius:10px; cursor:pointer; }
+.result { margin-top:20px; padding:15px; border-radius:10px; background:#eee; font-size:15px; line-height:1.7; }
+.valid { color:green; font-weight:bold; }
+.invalid { color:red; font-weight:bold; }
+img#logo{
+    display: flex;
+    justify-self: center;
+    width: 250px;
+    height: 250px;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+    <img src="./image.png" alt="logo" id="logo">
+<h2>اعتبارسنجی ایمیل و نام‌کاربری</h2>
+
+<label>ایمیل:</label>
+<input type="text" id="email" placeholder="مثال: test@example.com" />
+
+<label>نام‌کاربری:</label>
+<input type="text" id="username" placeholder="حداقل 4 کاراکتر، بدون فاصله مخفی..." />
+
+<button onclick="validateAll()">بررسی</button>
+
+<div class="result" id="output"></div>
+</div>
+
+<script>
+function validateEmail(email) {
+    email = email.trim().normalize();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const hiddenSpaces = /\u200B|\u200C|\u200D|\uFEFF/;
+
+    return {
+        validFormat: emailRegex.test(email),
+        hasHiddenChars: hiddenSpaces.test(email),
+        endsWithDot: email.endsWith('.'),
+        startsWithDot: email.startsWith('.'),
+        raw: email
+    };
+}
+
+function validateUsername(username) {
+    const raw = username;
+    username = username.trim().normalize("NFC");
+
+    const forbidden = [' ', '\u200B', '\u200C', '\u200D', '\uFEFF', '@', '/', '\\'];
+    const hasForbidden = forbidden.some(f => username.includes(f));
+    const validLength = username.length >= 4 && username.length <= 20;
+    const pattern = /^[a-zA-Z0-9._-]+$/;
+
+    return {
+        raw,
+        normalized: username,
+        validLength,
+        hasForbidden,
+        validPattern: pattern.test(username)
+    };
+}
+
+function validateAll() {
+    const email = document.getElementById("email").value;
+    const username = document.getElementById("username").value;
+    const e = validateEmail(email);
+    const u = validateUsername(username);
+
+    let html = "<h3>نتیجه بررسی:</h3>";
+
+    html += `<p><strong>ایمیل:</strong><br>
+        قالب صحیح: <span class="${e.validFormat?'valid':'invalid'}">${e.validFormat?'بله':'خیر'}</span><br>
+        دارای فاصله/کاراکتر مخفی: <span class="${e.hasHiddenChars?'invalid':'valid'}">${e.hasHiddenChars?'بله':'خیر'}</span><br>
+        شروع با نقطه: ${e.startsWithDot?'بله':'خیر'}<br>
+        پایان با نقطه: ${e.endsWithDot?'بله':'خیر'}
+    </p>`;
+
+    html += `<p><strong>نام‌کاربری:</strong><br>
+        طول معتبر (۴–۲۰): <span class="${u.validLength?'valid':'invalid'}">${u.validLength?'بله':'خیر'}</span><br>
+        کاراکتر ممنوع: <span class="${u.hasForbidden?'invalid':'valid'}">${u.hasForbidden?'بله':'خیر'}</span><br>
+        الگوی مجاز: <span class="${u.validPattern?'valid':'invalid'}">${u.validPattern?'بله':'خیر'}</span><br>
+    </p>`;
+
+    document.getElementById("output").innerHTML = html;
+}
+</script>
+</body>
+</html>
